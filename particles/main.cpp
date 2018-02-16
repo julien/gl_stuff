@@ -91,11 +91,6 @@ struct Particle {
 	float x, y, z;
 	float vx, vy;
 	float size, life;
-
-	// not needed since we're not sorting
-	// bool operator <(const Particle& that) const {
-	// 	return this->life > that.life;
-	// }
 };
 
 const int max_particles = 1000;
@@ -119,10 +114,6 @@ int find_free_particle() {
 
 	return 0;
 }
-
-// void sort_particles() {
-// 	std::sort( &particles[0], &particles[max_particles] );
-// }
 
 int rand_range( int min, int max ) {
    return min + rand() / (RAND_MAX / (max - min + 1) + 1);
@@ -198,7 +189,6 @@ int main() {
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
 	glClearColor( 0.0, 0.0, 0.0, 1.0 );
-	glViewport( 0, 0, g_viewport_width, g_viewport_height );
 
 	glfw_framebuffer_size_callback( window, g_viewport_width, g_viewport_height );
 
@@ -261,6 +251,10 @@ int main() {
 		glBindBuffer( GL_ARRAY_BUFFER, position_vbo );
 		glBufferData( GL_ARRAY_BUFFER, max_particles * 4 * sizeof( GLfloat ), NULL, GL_STREAM_DRAW );
 		glBufferSubData( GL_ARRAY_BUFFER, 0, particles_count * sizeof( GLfloat) * 4, g_particles_position_size_data );
+
+		int w, h;
+		glfwGetFramebufferSize( window, &w, &h );
+		glViewport( 0, 0, w, h );
 
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 		glUniform2f( u_resolution, g_viewport_width, g_viewport_height );

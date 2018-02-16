@@ -175,7 +175,6 @@ int main() {
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
 	glClearColor( 0.0, 0.0, 0.0, 1.0 );
-	glViewport( 0, 0, g_viewport_width, g_viewport_height );
 
 	glfw_framebuffer_size_callback( window, g_viewport_width, g_viewport_height );
 
@@ -214,6 +213,10 @@ int main() {
 		points[old_length] = p.x;
 		points[old_length + 1] = p.y;
 		num_points++;
+
+		int w, h;
+		glfwGetFramebufferSize( window, &w, &h );
+		glViewport( 0, 0, w, h );
 
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 		glUniform2f( u_resolution, g_viewport_width, g_viewport_height );
