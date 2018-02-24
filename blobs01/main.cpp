@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <math.h>
+#include <cmath>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -17,7 +18,7 @@ int g_viewport_height = 768;
 const int max_blobs = 5;
 blob *blobs = NULL;
 
-const int max_points = 10000;
+const int max_points = 40000;
 const int point_size = 7;
 const int num_points = max_points * point_size;
 float *points = NULL;
