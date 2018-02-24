@@ -15,16 +15,4 @@ $(bin): $(src)
 debug: CXXFLAGS += -DDEBUG -g
 debug: clean $(bin);
 
-clean:
-	@if [ -f $(bin) ];then rm $(bin); fi;
-
-gdb: clean debug
-	@gdb $(bin)
-
-run: $(bin)
-	./$<
-
-test: $(bin)
-	@valgrind -v ./$<
-
 all: $(bin)
