@@ -54,9 +54,9 @@ void update_blobs( blob *bs ) {
 		float dy = (b->ny - b->y);
 		float dr = (b->nr - b->r);
 
-		float ax = abs(dx);
-		float ay = abs(dy);
-		float ar = abs(dr);
+		float ax = fabs(dx);
+		float ay = fabs(dy);
+		float ar = fabs(dr);
 
 		float vx = dx * b->ex;
 		float vy = dy * b->ey;

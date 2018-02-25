@@ -10,4 +10,4 @@ void main() {
   vec4 pos = vec4(a_position.x, a_position.y, a_position.z, 1.0);
   v_texcoord = a_texcoord;
   gl_Position = pos * u_matrix;
-};
+}
