@@ -15,4 +15,7 @@ $(bin): $(src)
 debug: CXXFLAGS += -DDEBUG -g
 debug: clean $(bin);
 
+clean:
+	@if [ -f $(bin) ];then rm $(bin);fi
+
 all: $(bin)
