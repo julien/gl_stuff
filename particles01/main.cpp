@@ -5,37 +5,28 @@
 #include <stdlib.h>
 #include <time.h>
 #include <algorithm>
+#include "utils.h"
 
 int g_viewport_width = 1024;
 int g_viewport_height = 768;
 
-void print_infolog(GLuint index) {
-	int max_length = 2048;
-	int actual_length = 0;
-	char log[2048];
-
-	glGetShaderInfoLog(index, max_length, &actual_length, log);
-	printf("%u:\n%s\n", index, log);
-}
-
 GLuint create_shaders() {
 	const char *vs_str = "#version 410\n"
-		"layout(location=0) in vec3 squareVertices;\n"
-		"layout(location=1) in vec4 xyzs;\n"
-		"uniform vec2 u_resolution;\n"
-		"uniform float u_time;\n"
-		"void main() {\n"
-		"  vec2 vp = xyzs.xy + squareVertices.xy;\n"
-		"  vec2 zeroToOne = vp / u_resolution;\n"
-		"  vec2 zeroToTwo = zeroToOne * 2.0;\n"
-		"  vec2 clipSpace = zeroToTwo - 1.0;\n"
-		// "  clipSpace.xy *= sin( u_time * 0.02 ) / cos( u_time * 0.03 );\n"
-		"  gl_Position = vec4(clipSpace * vec2(1.0, -1.0), 0.0, 1.0);\n"
+		"layout(location=0) in vec3 squareVertices;"
+		"layout(location=1) in vec4 xyzs;"
+		"uniform vec2 u_resolution;"
+		"uniform float u_time;"
+		"void main() {"
+		"  vec2 vp = xyzs.xy + squareVertices.xy;"
+		"  vec2 zeroToOne = vp / u_resolution;"
+		"  vec2 zeroToTwo = zeroToOne * 2.0;"
+		"  vec2 clipSpace = zeroToTwo - 1.0;"
+		"  gl_Position = vec4(clipSpace * vec2(1.0, -1.0), 0.0, 1.0);"
 		"}";
 	const char *fs_str = "#version 410\n"
-		"out vec4 frag_color;\n"
-		"void main() {\n"
-		"  frag_color = vec4(0.6, 0.6, 0.6, 1.0);\n"
+		"out vec4 frag_color;"
+		"void main() {"
+		"  frag_color = vec4(0.6, 0.6, 0.6, 1.0);"
 		"}";
 
 	GLuint vs = glCreateShader( GL_VERTEX_SHADER );
@@ -81,21 +72,15 @@ GLuint create_shaders() {
 	return sp;
 }
 
-void glfw_framebuffer_size_callback( GLFWwindow *window, int width, int height ) {
-	g_viewport_width = width;
-	g_viewport_height = height;
-	glViewport( 0, 0, g_viewport_width, g_viewport_height );
-}
-
-struct Particle {
+struct particle {
 	float x, y, z;
 	float vx, vy;
 	float size, life;
 };
 
-const int max_particles = 1000;
+const int max_particles = 50000;
 int last_used_particle = 0;
-Particle particles[max_particles];
+particle particles[max_particles];
 
 int find_free_particle() {
 	for (int i = last_used_particle; i < max_particles; i++) {
@@ -113,10 +98,6 @@ int find_free_particle() {
 	}
 
 	return 0;
-}
-
-int rand_range( int min, int max ) {
-   return min + rand() / (RAND_MAX / (max - min + 1) + 1);
 }
 
 int main() {
@@ -212,7 +193,7 @@ int main() {
 
 		int particles_count = 0;
 		for ( int i = 0; i < max_particles; i++ ) {
-			Particle& p = particles[i];
+			particle& p = particles[i];
 
 			if (p.life > 0.0f) {
 				p.x += p.vx;
@@ -245,8 +226,6 @@ int main() {
 
 			particles_count++;
 		}
-
-		// sort_particles();
 
 		glBindBuffer( GL_ARRAY_BUFFER, position_vbo );
 		glBufferData( GL_ARRAY_BUFFER, max_particles * 4 * sizeof( GLfloat ), NULL, GL_STREAM_DRAW );

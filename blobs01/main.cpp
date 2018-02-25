@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "utils.h"
 
 struct blob {
 	float x, y, r;
@@ -23,27 +24,18 @@ const int point_size = 7;
 const int num_points = max_points * point_size;
 float *points = NULL;
 
-void print_infolog(GLuint index) {
-	int max_length = 2048;
-	int actual_length = 0;
-	char log[2048];
-
-	glGetShaderInfoLog(index, max_length, &actual_length, log);
-	fprintf( stdout, "%u:\n%s\n", index, log );
-}
-
 GLuint create_shaders() {
 	const char *vs_str = "#version 410\n"
-		"layout (location=0) in vec2 a_position;\n"
-		"layout (location=1) in float a_pointsize;\n"
-		"void main() {\n"
-		"  gl_Position = vec4(a_position, 0.0, 1.0);\n"
-		"  gl_PointSize = a_pointsize;\n"
+		"layout (location=0) in vec2 a_position;"
+		"layout (location=1) in float a_pointsize;"
+		"void main() {"
+		"  gl_Position = vec4(a_position, 0.0, 1.0);"
+		"  gl_PointSize = a_pointsize;"
 		"}";
 	const char *fs_str = "#version 410\n"
-		"out vec4 frag_color;\n"
-		"void main() {\n"
-		"  frag_color = vec4(1.0, 1.0, 1.0, 1.0);\n"
+		"out vec4 frag_color;"
+		"void main() {"
+		"  frag_color = vec4(1.0, 1.0, 1.0, 1.0);"
 		"}";
 
 	GLuint vs = glCreateShader( GL_VERTEX_SHADER );
@@ -87,16 +79,6 @@ GLuint create_shaders() {
 	glDeleteShader( fs );
 
 	return sp;
-}
-
-void glfw_framebuffer_size_callback( GLFWwindow *window, int width, int height ) {
-	g_viewport_width = width;
-	g_viewport_height = height;
-	glViewport( 0, 0, g_viewport_width, g_viewport_height );
-}
-
-float rand_range( float min, float max ) {
-   return min + rand() / (RAND_MAX / (max - min + 1) + 1);
 }
 
 blob *create_blobs() {
@@ -288,10 +270,6 @@ int main() {
 	glClearColor( 0.0, 0.0, 0.0, 1.0 );
 
 	while ( !glfwWindowShouldClose( window ) ) {
-		// static double previous_seconds = glfwGetTime();
-		// double current_seconds = glfwGetTime();
-		// double elapsed_seconds = current_seconds - previous_seconds;
-		// previous_seconds = current_seconds;
 
 		int w, h;
 		glfwGetFramebufferSize( window, &w, &h );

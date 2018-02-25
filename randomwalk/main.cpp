@@ -4,36 +4,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "utils.h"
 
 int g_viewport_width = 1024;
 int g_viewport_height = 768;
 
-void print_infolog(GLuint index) {
-	int max_length = 2048;
-	int actual_length = 0;
-	char log[2048];
-
-	glGetShaderInfoLog(index, max_length, &actual_length, log);
-	printf("%u:\n%s\n", index, log);
-}
-
 GLuint create_shaders() {
 	const char *vs_str = "#version 410\n"
-		"in vec2 vp;\n"
-		"uniform vec2 u_resolution;\n"
-		"uniform float u_time;\n"
-		"uniform float u_pointsize;\n"
-		"void main() {\n"
-		"  gl_PointSize = u_pointsize;\n"
-		"  vec2 zeroToOne = vp / u_resolution;\n"
-		"  vec2 zeroToTwo = zeroToOne * 2.0;\n"
-		"  vec2 clipSpace = zeroToTwo - 1.0;\n"
-		"  gl_Position = vec4(clipSpace * vec2(1.0, -1.0), 0.0, 1.0);\n"
+		"in vec2 vp;"
+		"uniform vec2 u_resolution;"
+		"uniform float u_time;"
+		"uniform float u_pointsize;"
+		"void main() {"
+		"  gl_PointSize = u_pointsize;"
+		"  vec2 zeroToOne = vp / u_resolution;"
+		"  vec2 zeroToTwo = zeroToOne * 2.0;"
+		"  vec2 clipSpace = zeroToTwo - 1.0;"
+		"  gl_Position = vec4(clipSpace * vec2(1.0, -1.0), 0.0, 1.0);"
 		"}";
 	const char *fs_str = "#version 410\n"
-		"out vec4 frag_color;\n"
-		"void main() {\n"
-		"  frag_color = vec4(1.0, 1.0, 1.0, 0.25);\n"
+		"out vec4 frag_color;"
+		"void main() {"
+		"  frag_color = vec4(1.0, 1.0, 1.0, 0.25);"
 		"}";
 
 	GLuint vs = glCreateShader( GL_VERTEX_SHADER );
@@ -79,12 +71,6 @@ GLuint create_shaders() {
 	return sp;
 }
 
-void glfw_framebuffer_size_callback( GLFWwindow *window, int width, int height ) {
-	g_viewport_width = width;
-	g_viewport_height = height;
-	glViewport( 0, 0, g_viewport_width, g_viewport_height );
-}
-
 struct particle {
 	float x;
 	float y;
@@ -94,10 +80,6 @@ struct particle {
 	float vy;
 	float life;
 };
-
-int rand_range( int min, int max ) {
-   return min + rand() / (RAND_MAX / (max - min + 1) + 1);
-}
 
 int main() {
 	srand( time( NULL ) );
@@ -181,7 +163,6 @@ int main() {
 	while ( !glfwWindowShouldClose( window ) ) {
 		static double previous_seconds = glfwGetTime();
 		double current_seconds = glfwGetTime();
-		// double elapsed_seconds = current_seconds - previous_seconds;
 		previous_seconds = current_seconds;
 
 		int speedX = rand_range( -5, 5 );
