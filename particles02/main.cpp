@@ -138,68 +138,6 @@ void draw_particles() {
 	glDrawArrays( GL_TRIANGLES, 0, quads * 6 );
 }
 
-GLuint create_shaders() {
-	const char *vs_str = "#version 410\n"
-		"layout (location=0) in vec3 a_position;"
-		"layout (location=1) in vec2 a_texcoord;"
-		"out vec2 v_texcoord;"
-		"uniform mat4 u_matrix;"
-		"void main() {"
-		"  vec4 pos = vec4(a_position.x, a_position.y, a_position.z, 1.0);"
-		"  v_texcoord = a_texcoord;"
-		"  gl_Position = pos * u_matrix;"
-		"}";
-	const char *fs_str = "#version 410\n"
-		"uniform sampler2D u_image;"
-		"in vec2 v_texcoord;"
-		"out vec4 frag_color;"
-		"void main() {"
-		"  frag_color = texture(u_image, v_texcoord);"
-		"}";
-
-	GLuint vs = glCreateShader( GL_VERTEX_SHADER );
-	glShaderSource( vs, 1, &vs_str, NULL );
-	glCompileShader( vs );
-
-	GLint params = -1;
-	glGetShaderiv( vs, GL_COMPILE_STATUS, &params );
-	if ( GL_TRUE != params ) {
-		fprintf( stderr, "ERROR: GL shader index %i did not compile\n", vs );
-		print_infolog( vs );
-		return - 1;
-	}
-
-	GLuint fs = glCreateShader( GL_FRAGMENT_SHADER );
-	glShaderSource( fs, 1, &fs_str, NULL );
-	glCompileShader( fs );
-
-	params = -1;
-	glGetShaderiv( fs, GL_COMPILE_STATUS, &params );
-	if ( GL_TRUE != params ) {
-		fprintf( stderr, "ERROR: GL shader index %i did not compile\n", vs );
-		print_infolog( fs );
-		return -1;
-	}
-
-	GLuint sp = glCreateProgram();
-	glAttachShader( sp, vs );
-	glAttachShader( sp, fs );
-	glLinkProgram( sp );
-
-	params = -1;
-	glGetProgramiv( sp, GL_LINK_STATUS, &params );
-	if ( GL_TRUE != params ) {
-		fprintf( stderr, "ERROR: couldn't link shader program %u\n", sp );
-		print_infolog( sp );
-		return -1;
-	}
-
-	glDeleteShader( vs );
-	glDeleteShader( fs );
-
-	return sp;
-}
-
 int main() {
 	srand( time( NULL ) );
 
@@ -230,7 +168,7 @@ int main() {
 
 	setup_particles();
 
-	GLuint sp = create_shaders();
+	GLuint sp = create_program( "vert.glsl", "frag.glsl" );
 	glUseProgram( sp );
 
 	u_matrix = glGetUniformLocation( sp, "u_matrix" );

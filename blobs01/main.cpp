@@ -24,63 +24,6 @@ const int point_size = 7;
 const int num_points = max_points * point_size;
 float *points = NULL;
 
-GLuint create_shaders() {
-	const char *vs_str = "#version 410\n"
-		"layout (location=0) in vec2 a_position;"
-		"layout (location=1) in float a_pointsize;"
-		"void main() {"
-		"  gl_Position = vec4(a_position, 0.0, 1.0);"
-		"  gl_PointSize = a_pointsize;"
-		"}";
-	const char *fs_str = "#version 410\n"
-		"out vec4 frag_color;"
-		"void main() {"
-		"  frag_color = vec4(1.0, 1.0, 1.0, 1.0);"
-		"}";
-
-	GLuint vs = glCreateShader( GL_VERTEX_SHADER );
-	glShaderSource( vs, 1, &vs_str, NULL );
-	glCompileShader( vs );
-
-	GLint params = -1;
-	glGetShaderiv( vs, GL_COMPILE_STATUS, &params );
-	if ( GL_TRUE != params ) {
-		fprintf( stderr, "ERROR: GL shader index %i did not compile\n", vs );
-		print_infolog( vs );
-		return - 1;
-	}
-
-	GLuint fs = glCreateShader( GL_FRAGMENT_SHADER );
-	glShaderSource( fs, 1, &fs_str, NULL );
-	glCompileShader( fs );
-
-	params = -1;
-	glGetShaderiv( fs, GL_COMPILE_STATUS, &params );
-	if ( GL_TRUE != params ) {
-		fprintf( stderr, "ERROR: GL shader index %i did not compile\n", vs );
-		print_infolog( fs );
-		return -1;
-	}
-
-	GLuint sp = glCreateProgram();
-	glAttachShader( sp, vs );
-	glAttachShader( sp, fs );
-	glLinkProgram( sp );
-
-	params = -1;
-	glGetProgramiv( sp, GL_LINK_STATUS, &params );
-	if ( GL_TRUE != params ) {
-		fprintf( stderr, "ERROR: couldn't link shader program %u\n", sp );
-		print_infolog( sp );
-		return -1;
-	}
-
-	glDeleteShader( vs );
-	glDeleteShader( fs );
-
-	return sp;
-}
-
 blob *create_blobs() {
 	blob *blobs = (blob*) malloc( sizeof(blob) * max_blobs );
 	if ( blobs == NULL ) {
@@ -238,7 +181,7 @@ int main() {
 	glewExperimental = GL_TRUE;
 	glewInit();
 
-	GLuint sp = create_shaders();
+	GLuint sp = create_program( "vert.glsl", "frag.glsl" );
 
 	blobs = create_blobs();
 	create_points();

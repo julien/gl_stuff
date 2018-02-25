@@ -9,68 +9,6 @@
 int g_viewport_width = 1024;
 int g_viewport_height = 768;
 
-GLuint create_shaders() {
-	const char *vs_str = "#version 410\n"
-		"in vec2 vp;"
-		"uniform vec2 u_resolution;"
-		"uniform float u_time;"
-		"uniform float u_pointsize;"
-		"void main() {"
-		"  gl_PointSize = u_pointsize;"
-		"  vec2 zeroToOne = vp / u_resolution;"
-		"  vec2 zeroToTwo = zeroToOne * 2.0;"
-		"  vec2 clipSpace = zeroToTwo - 1.0;"
-		"  gl_Position = vec4(clipSpace * vec2(1.0, -1.0), 0.0, 1.0);"
-		"}";
-	const char *fs_str = "#version 410\n"
-		"out vec4 frag_color;"
-		"void main() {"
-		"  frag_color = vec4(1.0, 1.0, 1.0, 0.25);"
-		"}";
-
-	GLuint vs = glCreateShader( GL_VERTEX_SHADER );
-	glShaderSource( vs, 1, &vs_str, NULL );
-	glCompileShader( vs );
-
-	GLint params = -1;
-	glGetShaderiv( vs, GL_COMPILE_STATUS, &params );
-	if ( GL_TRUE != params ) {
-		fprintf( stderr, "ERROR: GL shader index %i did not compile\n", vs );
-		print_infolog( vs );
-		return - 1;
-	}
-
-	GLuint fs = glCreateShader( GL_FRAGMENT_SHADER );
-	glShaderSource( fs, 1, &fs_str, NULL );
-	glCompileShader( fs );
-
-	params = -1;
-	glGetShaderiv( fs, GL_COMPILE_STATUS, &params );
-	if ( GL_TRUE != params ) {
-		fprintf( stderr, "ERROR: GL shader index %i did not compile\n", vs );
-		print_infolog( fs );
-		return -1;
-	}
-
-	GLuint sp = glCreateProgram();
-	glAttachShader( sp, vs );
-	glAttachShader( sp, fs );
-	glLinkProgram( sp );
-
-	params = -1;
-	glGetProgramiv( sp, GL_LINK_STATUS, &params );
-	if ( GL_TRUE != params ) {
-		fprintf( stderr, "ERROR: couldn't link shader program %u\n", sp );
-		print_infolog( sp );
-		return -1;
-	}
-
-	glDeleteShader( vs );
-	glDeleteShader( fs );
-
-	return sp;
-}
-
 struct particle {
 	float x;
 	float y;
@@ -141,7 +79,7 @@ int main() {
 	glVertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, 0, NULL );
 	glEnableVertexAttribArray( 0 );
 
-	GLuint sp = create_shaders();
+	GLuint sp = create_program( "vert.glsl", "frag.glsl" );
 
 	glUseProgram( sp );
 

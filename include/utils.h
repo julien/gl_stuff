@@ -7,20 +7,13 @@
 #include <stdio.h>
 #include <time.h>
 
+#define MAX_SHADER_LENGTH 262144
+
 extern int g_viewport_width;
 extern int g_viewport_height;
 
 float rand_range( float min, float max ) {
    return min + rand() / (RAND_MAX / (max - min + 1) + 1);
-}
-
-void print_infolog(GLuint index) {
-	int max_length = 2048;
-	int actual_length = 0;
-	char log[2048];
-
-	glGetShaderInfoLog(index, max_length, &actual_length, log);
-	fprintf( stdout, "%u:\n%s\n", index, log );
 }
 
 void glfw_framebuffer_size_callback( GLFWwindow *window, int width, int height ) {
@@ -82,4 +75,87 @@ int load_texture( const char *file_name, GLuint *tex, int check ) {
 
 	return 1;
 }
+
+void print_infolog(GLuint index) {
+	int max_length = 2048;
+	int actual_length = 0;
+	char log[2048];
+
+	glGetShaderInfoLog(index, max_length, &actual_length, log);
+	fprintf( stderr, "%u:\n%s\n", index, log );
+}
+
+int file_to_str( const char* file_name, char* shader_str, int max_len ) {
+
+	FILE* file = fopen( file_name, "r" );
+	if ( !file ) {
+		fprintf( stderr, "Error openining file: %s\n", file_name );
+		return 0;
+	}
+
+	size_t cnt = fread( shader_str, 1, max_len - 1, file );
+	if ( (int) cnt >= max_len - 1 ) {
+		fprintf( stderr, "Warning: file %s too big.\n", file_name );
+	}
+
+	if ( ferror( file ) ) {
+		fprintf( stderr, "Error reading shader file %s\n", file_name );
+		fclose( file );
+		return 0;
+	}
+
+	/* append \0 to the end of string */
+	shader_str[cnt] = 0;
+
+	fclose( file );
+	return 1;
+}
+
+int create_shader( const char* file_name, GLuint* shader, GLenum type ) {
+	char shader_string[MAX_SHADER_LENGTH];
+
+	file_to_str( file_name, shader_string, MAX_SHADER_LENGTH );
+
+	*shader = glCreateShader( type );
+	const GLchar* p = (const GLchar *) shader_string;
+	glShaderSource( *shader, 1, &p, NULL );
+	glCompileShader( *shader );
+
+	int params = -1;
+	glGetShaderiv( *shader, GL_COMPILE_STATUS, &params );
+	if ( GL_TRUE != params ) {
+		fprintf( stderr, "Error shader %i didn't compile\n", *shader );
+		print_infolog( *shader );
+		return 0;
+	}
+
+	return 1;
+}
+
+GLuint create_program( const char* vert_src, const char* frag_src ) {
+
+	GLuint vert, frag;
+	create_shader( vert_src, &vert, GL_VERTEX_SHADER );
+	create_shader( frag_src, &frag, GL_FRAGMENT_SHADER );
+
+	GLuint prog = glCreateProgram();
+
+	glAttachShader( prog, vert );
+	glAttachShader( prog, frag );
+	glLinkProgram( prog );
+
+	GLint params = -1;
+	glGetProgramiv( prog, GL_LINK_STATUS, &params );
+	if ( GL_TRUE != params ) {
+		fprintf( stderr, "Error: couldn't link shader program %u\n", prog);
+		print_infolog( prog );
+		return -1;
+	}
+
+	glDeleteShader( vert );
+	glDeleteShader( frag );
+
+	return prog;
+}
+
 #endif

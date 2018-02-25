@@ -10,68 +10,6 @@
 int g_viewport_width = 1024;
 int g_viewport_height = 768;
 
-GLuint create_shaders() {
-	const char *vs_str = "#version 410\n"
-		"layout(location=0) in vec3 squareVertices;"
-		"layout(location=1) in vec4 xyzs;"
-		"uniform vec2 u_resolution;"
-		"uniform float u_time;"
-		"void main() {"
-		"  vec2 vp = xyzs.xy + squareVertices.xy;"
-		"  vec2 zeroToOne = vp / u_resolution;"
-		"  vec2 zeroToTwo = zeroToOne * 2.0;"
-		"  vec2 clipSpace = zeroToTwo - 1.0;"
-		"  gl_Position = vec4(clipSpace * vec2(1.0, -1.0), 0.0, 1.0);"
-		"}";
-	const char *fs_str = "#version 410\n"
-		"out vec4 frag_color;"
-		"void main() {"
-		"  frag_color = vec4(0.6, 0.6, 0.6, 1.0);"
-		"}";
-
-	GLuint vs = glCreateShader( GL_VERTEX_SHADER );
-	glShaderSource( vs, 1, &vs_str, NULL );
-	glCompileShader( vs );
-
-	GLint params = -1;
-	glGetShaderiv( vs, GL_COMPILE_STATUS, &params );
-	if ( GL_TRUE != params ) {
-		fprintf( stderr, "ERROR: GL shader index %i did not compile\n", vs );
-		print_infolog( vs );
-		return - 1;
-	}
-
-	GLuint fs = glCreateShader( GL_FRAGMENT_SHADER );
-	glShaderSource( fs, 1, &fs_str, NULL );
-	glCompileShader( fs );
-
-	params = -1;
-	glGetShaderiv( fs, GL_COMPILE_STATUS, &params );
-	if ( GL_TRUE != params ) {
-		fprintf( stderr, "ERROR: GL shader index %i did not compile\n", vs );
-		print_infolog( fs );
-		return -1;
-	}
-
-	GLuint sp = glCreateProgram();
-	glAttachShader( sp, vs );
-	glAttachShader( sp, fs );
-	glLinkProgram( sp );
-
-	params = -1;
-	glGetProgramiv( sp, GL_LINK_STATUS, &params );
-	if ( GL_TRUE != params ) {
-		fprintf( stderr, "ERROR: couldn't link shader program %u\n", sp );
-		print_infolog( sp );
-		return -1;
-	}
-
-	glDeleteShader( vs );
-	glDeleteShader( fs );
-
-	return sp;
-}
-
 struct particle {
 	float x, y, z;
 	float vx, vy;
@@ -158,7 +96,7 @@ int main() {
 	// initialize with NULL buffer, it will be updated on each frame
 	glBufferData( GL_ARRAY_BUFFER, max_particles * 4 * sizeof( GLfloat ), NULL, GL_STREAM_DRAW );
 
-	GLuint sp = create_shaders();
+	GLuint sp = create_program( "vert.glsl", "frag.glsl" );
 	glUseProgram( sp );
 
 	GLint u_resolution = glGetUniformLocation( sp, "u_resolution" );
