@@ -117,7 +117,7 @@ int main() {
 
 		glBufferData( GL_ARRAY_BUFFER,
 			MAX_PARTICLES * 30 * sizeof( GLfloat ),
-			particles->getVertices(),
+			particles->get_vertices(),
 			GL_DYNAMIC_DRAW );
 		glDrawArrays( GL_TRIANGLES, 0, quads );
 

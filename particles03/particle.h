@@ -1,7 +1,7 @@
 #ifndef __PARTICLE_H__
 #define __PARTICLE_H__
 
-const unsigned int MAX_PARTICLES = 50000;
+const unsigned int MAX_PARTICLES = 10000;
 const int PARTICLE_MESH_SIZE = 30;
 
 typedef struct vec2 {
@@ -69,14 +69,22 @@ public:
 		_next = next;
 	}
 
+	vec2 get_pos() const {
+		return pos;
+	}
+
+	vec2 get_size() const {
+		return size;
+	}
+
+
+private:
+	Particle *_next;
 	float life;
 	vec2 pos;
 	vec2 vel;
 	vec2 acc;
 	vec2 size;
-
-private:
-	Particle *_next;
 };
 
 class ParticlePool {
@@ -121,10 +129,14 @@ public:
 			if ( particles[i].in_use() ) {
 
 				int quads30i = quads30;
-				float x = particles[i].pos.x;
-				float y = particles[i].pos.y;
-				float xx = x + particles[i].size.x;
-				float yy = y + particles[i].size.y;
+
+				vec2 pos = particles[i].get_pos();
+				vec2 size = particles[i].get_size();
+
+				float x = pos.x;
+				float y = pos.y;
+				float xx = x + size.x;
+				float yy = y + size.y;
 
 				vertices[quads30i++] = x;
 				vertices[quads30i++] = y;
@@ -170,7 +182,7 @@ public:
 		return quads * 6;
 	}
 
-	inline const float *getVertices() const {
+	inline const float *get_vertices() const {
 		return vertices;
 	}
 
