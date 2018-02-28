@@ -1,7 +1,7 @@
 #ifndef __PARTICLE_H__
 #define __PARTICLE_H__
 
-const unsigned int MAX_PARTICLES = 10000;
+const unsigned int MAX_PARTICLES = 100000;
 const int PARTICLE_MESH_SIZE = 30;
 
 typedef struct vec2 {
