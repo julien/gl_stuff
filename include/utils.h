@@ -16,6 +16,20 @@ float rand_range( float min, float max ) {
    return min + rand() / (RAND_MAX / (max - min + 1) + 1);
 }
 
+float norm( float val, float min, float max ) {
+	return (val - min) / (max - min);
+}
+
+float lerp( float norm, float min, float max ) {
+	return (max - min) * norm + min;
+}
+
+float map( float val, float srcmin, float srcmax,
+		float dstmin, float dstmax ) {
+
+	return lerp( norm( val, srcmin, srcmax ), dstmin, dstmax );
+}
+
 void glfw_framebuffer_size_callback( GLFWwindow *window, int width, int height ) {
 	g_viewport_width = width;
 	g_viewport_height = height;
