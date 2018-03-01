@@ -65,22 +65,22 @@ public:
 		float dy2 = p2.pos.y - pos.y;
 
 		float fx = fact * force *
-			abs( dx1 ) / ( dx1 ) *
+			std::abs( dx1 ) / ( dx1 ) *
 			pow( dx1, 2 ) /
 			( pow( dy1, 2 )  + pow( dx1, 2 ) );
 
 		float fy = fact * force *
-			abs( dy1) / ( dy1 ) *
+			std::abs( dy1 ) / ( dy1 ) *
 			pow( dy1, 2 ) /
 			( pow( dy1, 2 )  + pow( dx1, 2 ) );
 
 		float rx = fact * force *
-			abs( dx2 ) / ( dx2 ) *
+			std::abs( dx2 ) / ( dx2 ) *
 			pow( dx2, 2 ) /
 			( pow( dy2, 2 )  + pow( dx2, 2 ) );
 
 		float ry = fact * force *
-			abs( dy2 ) / ( dy2 ) *
+			std::abs( dy2 ) / ( dy2 ) *
 			pow( dy2, 2 ) /
 			( pow( dy2, 2 ) + pow( dx2, 2 ) );
 
