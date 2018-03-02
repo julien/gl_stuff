@@ -1,9 +1,9 @@
-CXXFLAGS = -Wall -pedantic
-FLAGS = $(shell pkg-config --libs --static glew glfw3)
-FLAGS += -I../include
-UNAME = $(shell uname -s)
+CXXFLAGS=-Wall -pedantic
+FLAGS:=$(shell pkg-config --libs --static glew glfw3)
+FLAGS+=-I../include
+UNAME=$(shell uname -s)
 ifeq ($(UNAME), Darwin)
-	FLAGS += -framework OpenGL
+	FLAGS+=-framework OpenGL
 endif
 
 bin?=app
