@@ -69,7 +69,6 @@ void draw_sprite( GLuint vao, GLint model_location, glm::vec2 position,
 	glBindVertexArray( 0 );
 }
 
-
 int get_free_sprite() {
 	for (  int i = free_sprite; i < MAX_SPRITES; i++ )  {
 		if ( sprites[i].life < 0 ) {
@@ -130,6 +129,8 @@ int main() {
 			( (float) g_viewport_height * 0.5) + rand_range( -200.0f, 200.0f )
 		);
 
+		sprites[i].rotation = rand_range( -3, 3 );
+
 		float size = 5.0f + rand_range( 10.0f, 20.0f );
 		sprites[i].size = glm::vec2( size, size );
 		sprites[i].life = 1.0f;
@@ -158,6 +159,26 @@ int main() {
 		for ( int i = 0; i < MAX_SPRITES; i++ ) {
 			if ( sprites[i].life > 0) {
 				sprites[i].rotation += elapsed_seconds;
+
+				sprites[i].position += 1.0f;
+
+				int t = (sprites[i].size.y * 0.5f) * -1.0f;
+				int r = g_viewport_width + (sprites[i].size.x * 0.5f);
+				int b = g_viewport_height + (sprites[i].size.y * 0.5f);
+				int l = (sprites[i].size.x * 0.5f) * -1.0f;
+
+				if ( sprites[i].position.x > r ) {
+					sprites[i].position.x = l;
+				}
+				if ( sprites[i].position.y < l ) {
+					sprites[i].position.x = r;
+				}
+				if ( sprites[i].position.y > b ) {
+					sprites[i].position.y = t;
+				}
+				if ( sprites[i].position.y < t ) {
+					sprites[i].position.y = b;
+				}
 
 				draw_sprite( vao, u_model, sprites[i].position, sprites[i].size,
 						sprites[i].rotation );
