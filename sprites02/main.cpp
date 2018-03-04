@@ -15,7 +15,7 @@
 int g_viewport_width = 1024;
 int g_viewport_height = 768;
 
-const int MAX_SPRITES = 30;
+const int MAX_SPRITES = 300;
 int free_sprite = 0;
 
 struct sprite {
@@ -29,30 +29,7 @@ struct sprite {
 
 sprite sprites[MAX_SPRITES];
 
-void initBuffers(GLuint *vao) {
-
-	GLfloat vertices[6] = {
-		 0.0, -1.0,
-		-1.0,  1.0,
-		 1.0,  1.0
-	};
-	GLuint vbo;
-
-	glGenVertexArrays( 1, vao );
-	glGenBuffers(1, &vbo );
-
-	glBindBuffer( GL_ARRAY_BUFFER, vbo );
-	glBufferData( GL_ARRAY_BUFFER, sizeof( vertices ), vertices, GL_STATIC_DRAW );
-
-	glBindVertexArray( *vao );
-	glEnableVertexAttribArray( 0 );
-	glVertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof( GLfloat ), (GLvoid*) 0 );
-	glBindBuffer( GL_ARRAY_BUFFER, 0 );
-	glBindVertexArray( 0 );
-}
-
-void draw_sprite( GLuint vao, GLint model_location, glm::vec2 position,
-		glm::vec2 size, GLfloat rotate ) {
+glm::mat4 draw_sprite( glm::vec2 position, glm::vec2 size, GLfloat rotate ) {
 	glm::mat4 model;
 
 	model = glm::translate( model, glm::vec3( position, 1.0f ) );
@@ -62,11 +39,7 @@ void draw_sprite( GLuint vao, GLint model_location, glm::vec2 position,
 	model = glm::translate( model, glm::vec3( -0.5 * size.x, -0.5f * size.y, 0.0 ) );
 
 	model = glm::scale( model, glm::vec3( size, 1.0f ) );
-	glUniformMatrix4fv( model_location, 1, GL_FALSE, (const float*) glm::value_ptr( model ) );
-
-	glBindVertexArray( vao );
-	glDrawArrays( GL_TRIANGLES, 0, 3 );
-	glBindVertexArray( 0 );
+	return model;
 }
 
 int get_free_sprite() {
@@ -136,8 +109,27 @@ int main() {
 		sprites[i].life = 1.0f;
 	}
 
+
+	GLfloat vertices[6] = {
+		 0.0, -1.0,
+		-1.0,  1.0,
+		 1.0,  1.0
+	};
+
 	GLuint vao;
-	initBuffers(&vao);
+	GLuint vbo;
+
+	glGenVertexArrays( 1, &vao );
+	glGenBuffers(1, &vbo );
+
+	glBindBuffer( GL_ARRAY_BUFFER, vbo );
+	glBufferData( GL_ARRAY_BUFFER, sizeof( vertices ), vertices, GL_STATIC_DRAW );
+
+	glBindVertexArray( vao );
+	glEnableVertexAttribArray( 0 );
+	glVertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof( GLfloat ), (GLvoid*) 0 );
+	glBindBuffer( GL_ARRAY_BUFFER, 0 );
+	glBindVertexArray( 0 );
 
 	glEnable( GL_BLEND );
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -157,7 +149,7 @@ int main() {
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 		for ( int i = 0; i < MAX_SPRITES; i++ ) {
-			if ( sprites[i].life > 0) {
+			if ( sprites[i].life > 0 ) {
 				sprites[i].rotation += elapsed_seconds;
 
 				sprites[i].position += 1.0f;
@@ -180,8 +172,12 @@ int main() {
 					sprites[i].position.y = b;
 				}
 
-				draw_sprite( vao, u_model, sprites[i].position, sprites[i].size,
-						sprites[i].rotation );
+				glm::mat4 model = draw_sprite( sprites[i].position, sprites[i].size, sprites[i].rotation );
+				glUniformMatrix4fv( u_model, 1, GL_FALSE, (const float*) glm::value_ptr( model ) );
+
+				glBindVertexArray( vao );
+				glDrawArrays( GL_TRIANGLES, 0, 3 );
+				glBindVertexArray( 0 );
 			}
 		}
 
