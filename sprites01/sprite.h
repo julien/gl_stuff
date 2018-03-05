@@ -8,20 +8,6 @@
 const unsigned int MAX_SPRITES = 10000;
 const int SPRITE_MESH_SIZE = 30;
 
-float norm( float val, float min, float max ) {
-	return (val - min) / (max - min);
-}
-
-float lerp( float norm, float min, float max ) {
-	return (max - min) * norm + min;
-}
-
-float map( float val, float srcmin, float srcmax,
-		float dstmin, float dstmax ) {
-
-	return lerp( norm( val, srcmin, srcmax ), dstmin, dstmax );
-}
-
 typedef struct vec2 {
 	float x;
 	float y;
