@@ -35,8 +35,6 @@ GLfloat view_matrix[16] = {
 };
 
 const int MAX_STACK = 100;
-const int MAT_SIZE = 6;
-const int MAT_STACK_SIZE = MAX_STACK * MAT_SIZE;
 GLfloat mat[] = { 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f };
 GLfloat stack[MAX_STACK];
 int stackp = 0;
