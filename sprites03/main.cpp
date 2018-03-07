@@ -59,19 +59,19 @@ void pop_matrix() {
 	mat[5] = stack[stackp + 5];
 }
 
-void trans( float x, float y ) {
+void trans(float x, float y) {
 	mat[4] = mat[0] * x + mat[2] * y + mat[4];
 	mat[5] = mat[1] * x + mat[3] * y + mat[5];
 }
 
-void scale( float x, float y ) {
+void scale(float x, float y) {
 	mat[0] = mat[0] * x;
 	mat[1] = mat[1] * x;
 	mat[2] = mat[2] * y;
 	mat[3] = mat[3] * y;
 }
 
-void rot( float r ) {
+void rot(float r) {
 	float a = mat[0];
 	float b = mat[1];
 	float c = mat[2];
@@ -86,21 +86,21 @@ void rot( float r ) {
 }
 
 void setup_sprites() {
-	for ( size_t i = 0; i < MAX_SPRITES; i++ ) {
-		sprite *s = &( sprites[i] );
+	for (size_t i = 0; i < MAX_SPRITES; i++) {
+		sprite *s = &(sprites[i]);
 		float w = (float) (g_viewport_width * 0.5);
 		float h = (float) (g_viewport_height * 0.5);
-		float x = w + rand_range( -w, w );
-		float y = h + rand_range( -h, h );
+		float x = w + rand_range(-w, w);
+		float y = h + rand_range(-h, h);
 		s->x = x;
 		s->y = y;
 		s->life = 1.0;
-		s->size = SPRITE_SIZE + rand_range( 4, 8 );
+		s->size = SPRITE_SIZE + rand_range(4, 8);
 		s->vx = 0;
 		s->vy = 0;
 		s->ax = 0;
 		s->ay = 0;
-		s->rotation = rand_range( 1, 9 ) * 0.1;
+		s->rotation = rand_range(1, 9) * 0.1;
 	}
 }
 
@@ -162,113 +162,113 @@ void drawRect(float x, float y, float w, float h) {
 	vpos_data[offset++] = x5 * a + y5 * c + e;
 	vpos_data[offset++] = x5 * b + y5 * d + f;
 
-	if ( ++sprite_count >= MAX_SPRITES ) {
-		glBufferData( GL_ARRAY_BUFFER,
-				sprite_count * SPRITE_MESH_SIZE * sizeof (GLfloat ),
-				vpos_data, GL_DYNAMIC_DRAW );
-		glDrawArrays( GL_TRIANGLES, 0, sprite_count * 6 );
+	if (++sprite_count >= MAX_SPRITES) {
+		glBufferData(GL_ARRAY_BUFFER,
+				sprite_count * SPRITE_MESH_SIZE * sizeof (GLfloat),
+				vpos_data, GL_DYNAMIC_DRAW);
+		glDrawArrays(GL_TRIANGLES, 0, sprite_count * 6);
 		sprite_count = 0;
 	}
 }
 
 int main() {
-	srand( time( NULL ) );
+	srand(time(NULL));
 
 	glfwInit();
 
-	glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
-	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 2 );
-	glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
-	glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	GLFWwindow *window = glfwCreateWindow(
-			g_viewport_width, g_viewport_height, "  ", NULL, NULL );
+			g_viewport_width, g_viewport_height, "  ", NULL, NULL);
 
 	GLFWmonitor *mon = glfwGetPrimaryMonitor();
-	const GLFWvidmode *mode = glfwGetVideoMode( mon );
+	const GLFWvidmode *mode = glfwGetVideoMode(mon);
 
 	int wx = (int)((mode->width - g_viewport_width) * 0.5);
 	int wy = (int)((mode->height - g_viewport_height) * 0.5);
 
-	glfwSetWindowPos( window, wx, wy );
-	glfwMakeContextCurrent( window );
+	glfwSetWindowPos(window, wx, wy);
+	glfwMakeContextCurrent(window);
 
 	glewExperimental = GL_TRUE;
 	glewInit();
 
-	GLuint sp = create_program( "vert.glsl", "frag.glsl" );
-	glUseProgram( sp );
+	GLuint sp = create_program("vert.glsl", "frag.glsl");
+	glUseProgram(sp);
 
-	GLint u_matrix = glGetUniformLocation( sp, "u_matrix" );
-	glUniformMatrix4fv( u_matrix, 1, GL_FALSE, view_matrix );
+	GLint u_matrix = glGetUniformLocation(sp, "u_matrix");
+	glUniformMatrix4fv(u_matrix, 1, GL_FALSE, view_matrix);
 
-	// GLint u_image = glGetUniformLocation( sp, "u_image" );
+	// GLint u_image = glGetUniformLocation(sp, "u_image");
 	// GLuint tex;
-	// load_texture( "dude.png", &tex, 0 );
-	// glUniform1i( u_image, 0 );
+	// load_texture("dude.png", &tex, 0);
+	// glUniform1i(u_image, 0);
 
 	setup_sprites();
 
 	// TODO: needed later when using interleaved data (pos+uv+color?)
-	// int fsize = sizeof( GLfloat );
+	// int fsize = sizeof(GLfloat);
 	// int stride = fsize * 5;
 
 	GLuint vao;
-	glGenVertexArrays( 1, &vao );
-	glBindVertexArray( vao );
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 
 	GLuint vp_vbo;
-	glGenBuffers( 1, &vp_vbo );
-	glBindBuffer( GL_ARRAY_BUFFER, vp_vbo );
+	glGenBuffers(1, &vp_vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vp_vbo);
 
-	glEnableVertexAttribArray( 0 );
-	// glVertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, stride, NULL );
-	glVertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, 0, NULL );
+	glEnableVertexAttribArray(0);
+	// glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, NULL);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
-	// glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, stride, (void*) 12);
-	// glEnableVertexAttribArray( 1 );
+	// glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*) 12);
+	// glEnableVertexAttribArray(1);
 
-	glEnable( GL_BLEND );
-	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glClearColor( 0.0, 0.0, 0.0, 1.0 );
+	glClearColor(0.0, 0.0, 0.0, 1.0);
 
-	while ( !glfwWindowShouldClose( window ) ) {
+	while (!glfwWindowShouldClose(window)) {
 		// static double previous_seconds = glfwGetTime();
 		// double current_seconds = glfwGetTime();
 		// double elapsed_seconds = current_seconds - previous_seconds;
 		// previous_seconds = current_seconds;
 
 		int w, h;
-		glfwGetFramebufferSize( window, &w, &h );
-		glViewport( 0, 0, w, h );
+		glfwGetFramebufferSize(window, &w, &h);
+		glViewport(0, 0, w, h);
 
-		glClear( GL_COLOR_BUFFER_BIT );
+		glClear(GL_COLOR_BUFFER_BIT);
 
-		for ( size_t i = 0; i < MAX_SPRITES; i++ ) {
-			if ( sprites[i].life > 0 ) {
+		for (size_t i = 0; i < MAX_SPRITES; i++) {
+			if (sprites[i].life > 0) {
 
 				push_matrix();
 
-				trans( sprites[i].x, sprites[i].y );
-				rot( sprites[i].rotation );
+				trans(sprites[i].x, sprites[i].y);
+				rot(sprites[i].rotation);
 				sprites[i].rotation += 0.01;
-				drawRect( sprites[i].x, sprites[i].y, sprites[i].size, sprites[i].size );
+				drawRect(sprites[i].x, sprites[i].y, sprites[i].size, sprites[i].size);
 
 				pop_matrix();
 			}
 		}
 
-		glBufferSubData( GL_ARRAY_BUFFER, 0,
-				sprite_count * SPRITE_MESH_SIZE * sizeof (GLfloat ),
+		glBufferSubData(GL_ARRAY_BUFFER, 0,
+				sprite_count * SPRITE_MESH_SIZE * sizeof (GLfloat),
 				vpos_data);
-		glDrawArrays( GL_TRIANGLES, 0, sprite_count * 6 );
+		glDrawArrays(GL_TRIANGLES, 0, sprite_count * 6);
 
 		glfwPollEvents();
-		if ( GLFW_PRESS == glfwGetKey( window, GLFW_KEY_ESCAPE ) ) {
-			glfwSetWindowShouldClose( window, 1 );
+		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE)) {
+			glfwSetWindowShouldClose(window, 1);
 		}
-		glfwSwapBuffers( window );
+		glfwSwapBuffers(window);
 	}
 
 	glfwTerminate();

@@ -24,6 +24,7 @@ void main() {
 
   vec4 pos = vec4(xy, 1.0, 1.0);
   gl_Position = u_matrix * pos;
+  gl_PointSize = 4.0;
 
   v_uv = a_uv;
   v_color = a_color;

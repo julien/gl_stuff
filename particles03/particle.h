@@ -92,16 +92,16 @@ public:
 	ParticlePool() {
 		first_available = &particles[0];
 
-		for ( int i = 0; i < POOL_SIZE - 1; i++ ) {
-			particles[i].set_next( &particles[i + 1] );
+		for (int i = 0; i < POOL_SIZE - 1; i++) {
+			particles[i].set_next(&particles[i + 1]);
 		}
-		particles[POOL_SIZE - 1].set_next( NULL );
+		particles[POOL_SIZE - 1].set_next(NULL);
 	}
 
-	void create( float x, float y, float w, float h,
-				 float vx, float vy, float life ) {
+	void create(float x, float y, float w, float h,
+				 float vx, float vy, float life) {
 
-		if ( first_available == NULL ) {
+		if (first_available == NULL) {
 			return;
 		}
 
@@ -109,13 +109,13 @@ public:
 
 		first_available = new_particle->get_next();
 
-		new_particle->init( x, y, w, h, vx, vy, life );
+		new_particle->init(x, y, w, h, vx, vy, life);
 	}
 
 	void update() {
-		for ( int i = 0; i < POOL_SIZE; i++ ) {
-			if ( particles[i].update() ) {
-				particles[i].set_next( first_available );
+		for (int i = 0; i < POOL_SIZE; i++) {
+			if (particles[i].update()) {
+				particles[i].set_next(first_available);
 				first_available = &particles[i];
 			}
 		}
@@ -125,8 +125,8 @@ public:
 		int quads = 0;
 		int quads30 = 0;
 
-		for ( int i = 0; i < POOL_SIZE; i++ ) {
-			if ( particles[i].in_use() ) {
+		for (int i = 0; i < POOL_SIZE; i++) {
+			if (particles[i].in_use()) {
 
 				int quads30i = quads30;
 
