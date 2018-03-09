@@ -4,7 +4,7 @@
 #include <time.h>
 #include "utils.h"
 
-#define SPRITE_COUNT 100000
+#define SPRITE_COUNT 5000000
 
 int g_viewport_width = 1024;
 int g_viewport_height = 768;
@@ -255,13 +255,13 @@ int main() {
 
 		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_UP)) {
 			if (s->count < SPRITE_COUNT) {
-				s->count += 10;
+				s->count += 100;
 			}
 		}
 
 		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_DOWN)) {
 			if (s->count > 0) {
-				s->count--;
+				s->count += 100;
 			}
 		}
 
