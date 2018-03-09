@@ -11,16 +11,14 @@ const unsigned int MAX_BATCH = 10922;
 const unsigned int VERTEX_DATA_SIZE = VERTEX_SIZE * MAX_BATCH * 6;
 const unsigned int VERTICES_PER_QUAD = 6;
 unsigned int count = 0;
-/* atttribute data */
 GLfloat pdata[VERTEX_DATA_SIZE];
-GLfloat cdata[VERTEX_DATA_SIZE];
 GLfloat view_matrix[16] = {
     2.0f / (float) g_viewport_width, 0.0f, 0.0f, 0.0f,
     0.0f, -2.0f / (float) g_viewport_height, 0.0f, 0.0f,
     0.0f, 0.0f, 1.0f, 1.0f,
    -1.0f, 1.0f, 0.0f, 0.0f
 };
-/* sprite stuff */
+
 struct sprite {
 	float ax;
 	float ay;
@@ -78,6 +76,18 @@ void init_sprites() {
 	}
 }
 
+void flush() {
+	if (0 == count) return;
+	/* TODO: optimize this (glBufferSubData);    */
+	/* TODO: use index buffer and glDrawElements */
+	glBufferData(GL_ARRAY_BUFFER,
+			VERTEX_DATA_SIZE,
+			pdata,
+			GL_DYNAMIC_DRAW);
+	glDrawArrays(GL_TRIANGLES, 0, count * VERTICES_PER_QUAD);
+	count = 0;
+}
+
 /* TODO: add texture argument */
 void draw(float x, float y, float w, float h, float r,
 		float tx, float ty, float sx, float sy,
@@ -98,7 +108,7 @@ void draw(float x, float y, float w, float h, float r,
 
     unsigned int offset = count * VERTEX_SIZE * VERTICES_PER_QUAD;
 
-    /* Rotation | Translation | Scale | Position | UV | Color */
+    /* Rotation | Translation | Scale | Position | UV */
 	/* Vertex 1 */
 	pdata[offset++] = r;
 	pdata[offset++] = tx;
@@ -109,7 +119,6 @@ void draw(float x, float y, float w, float h, float r,
 	pdata[offset++] = y0;
 	pdata[offset++] = u0;
 	pdata[offset++] = v1;
-	/* cdata[offset++] = argb; */
 
 	/* Vertex 2 */
 	pdata[offset++] = r;
@@ -121,7 +130,6 @@ void draw(float x, float y, float w, float h, float r,
 	pdata[offset++] = y1;
 	pdata[offset++] = u1;
 	pdata[offset++] = v1;
-	/* cdata[offset++] = argb; */
 
 	/* Vertex 3 */
 	pdata[offset++] = r;
@@ -133,7 +141,6 @@ void draw(float x, float y, float w, float h, float r,
 	pdata[offset++] = y2;
 	pdata[offset++] = u0;
 	pdata[offset++] = v0;
-	/* cdata[offset++] = argb; */
 
 	/* Vertex 4 */
 	pdata[offset++] = r;
@@ -145,7 +152,6 @@ void draw(float x, float y, float w, float h, float r,
 	pdata[offset++] = y3;
 	pdata[offset++] = u0;
 	pdata[offset++] = v0;
-	/* cdata[offset++] = argb; */
 
 	/* Vertex 5 */
 	pdata[offset++] = r;
@@ -157,7 +163,6 @@ void draw(float x, float y, float w, float h, float r,
 	pdata[offset++] = y4;
 	pdata[offset++] = u1;
 	pdata[offset++] = v1;
-	/* cdata[offset++] = argb; */
 
 	/* Vertex 6 */
 	pdata[offset++] = r;
@@ -169,28 +174,15 @@ void draw(float x, float y, float w, float h, float r,
 	pdata[offset++] = y5;
 	pdata[offset++] = u1;
 	pdata[offset++] = v0;
-	/* cdata[offset++] = argb; */
 
     if (++count >= MAX_BATCH) {
-        printf("match batch reached\n");
-        count = 0;
+		flush();
     }
 }
 
-void flush() {
-	if (0 == count) return;
-	/* TODO: optimize this (glBufferSubData);    */
-	/* TODO: use index buffer and glDrawElements */
-	glBufferData(GL_ARRAY_BUFFER,
-			VERTEX_DATA_SIZE,
-			pdata,
-			GL_DYNAMIC_DRAW);
-	glDrawArrays(GL_TRIANGLES, 0, count * VERTICES_PER_QUAD);
-	count = 0;
-}
 
 void init_buffers() {
-    /* Rotation | Translation | Scale | Position | UV | Color */
+    /* Rotation | Translation | Scale | Position | UV */
     int fsize = sizeof(GLfloat);
     int stride = fsize * 9;
 
@@ -217,9 +209,6 @@ void init_buffers() {
     /* UV */
     glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, stride, (void*) 28);
     glEnableVertexAttribArray(4);
-    /* Color */
-    /* glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, stride, (void*) 36); */
-    /* glEnableVertexAttribArray(5); */
 }
 
 int main() {
