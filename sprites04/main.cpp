@@ -6,85 +6,170 @@
 
 int g_viewport_width = 1024;
 int g_viewport_height = 768;
-
-unsigned const VERTEX_SIZE = 9;
-unsigned const int MAX_BATCH = 10922;
-unsigned const int VERTEX_DATA_SIZE = VERTEX_SIZE * MAX_BATCH * 6;
-unsigned const int VERTICES_PER_QUAD = 4;
-
+const unsigned int VERTEX_SIZE = 9;
+const unsigned int MAX_BATCH = 10922;
+const unsigned int VERTEX_DATA_SIZE = VERTEX_SIZE * MAX_BATCH * 6;
+const unsigned int VERTICES_PER_QUAD = 6;
+unsigned int count = 0;
+/* atttribute data */
+GLfloat pdata[VERTEX_DATA_SIZE];
+GLfloat cdata[VERTEX_DATA_SIZE];
 GLfloat view_matrix[16] = {
     2.0f / (float) g_viewport_width, 0.0f, 0.0f, 0.0f,
     0.0f, -2.0f / (float) g_viewport_height, 0.0f, 0.0f,
     0.0f, 0.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f, 0.0f, 0.0f
+   -1.0f, 1.0f, 0.0f, 0.0f
+};
+/* sprite stuff */
+struct sprite {
+	float ax;
+	float ay;
+	float life;
+	float rotation;
+	float rotation_speed;
+	float size;
+	float vx;
+	float vy;
+	float x;
+	float y;
 };
 
-GLfloat vertexData[VERTEX_DATA_SIZE];
-GLfloat vPositionData[VERTEX_DATA_SIZE];
-GLfloat vColorData[VERTEX_DATA_SIZE];
-unsigned int count = 0;
+const unsigned int MAX_SPRITES = 100000;
+const unsigned int SPRITE_SIZE = 8;
+unsigned int freesprite = 0;
+unsigned int spritecount = 0;
+sprite sprites[MAX_SPRITES];
+const float delta = 0.075;
+const float grav = 1.8;
 
-void draw_img(float x, float y, float w, float h, float r,
-               float tx, float ty, float sx, float sy,
-               float u0, float v0, float u1, float v1) {
+int get_free_sprite() {
+	for (unsigned int i = freesprite; i < MAX_SPRITES; i++) {
+		if (sprites[i].life < 0) {
+			freesprite = i;
+			return i;
+		}
+	}
+	for (unsigned int i = 0; i < freesprite; i++) {
+		if (sprites[i].life < 0) {
+			freesprite = i;
+			return i;
+		}
+	}
+	return -1;
+}
 
-    float x0 = x;
-    float y0 = y;
-    float x1 = x + w;
-    float y1 = y + h;
-    float x2 = x;
-    float y2 = y + h;
-    float x3 = x + w;
-    float y3 = y;
-    unsigned int offset = 0;
+void init_sprites() {
+	for (size_t i = 0; i < MAX_SPRITES; i++) {
+		sprite *s = &(sprites[i]);
+		float w = (float) (g_viewport_width * 0.5);
+		float h = (float) (g_viewport_height * 0.5);
+		float x = w + rand_range(-10, 10);
+		float y = h + rand_range(-10, 10);
+		s->ax = 0;
+		s->ay = 0;
+		s->life = -1.0;
+		s->size = SPRITE_SIZE + rand_range(2, SPRITE_SIZE);
+		s->vx = rand_range(-10, 10);
+		s->vy = rand_range(-10, 10);
+		s->x = x;
+		s->y = y;
+		s->rotation = 0.0f;
+		s->rotation_speed = rand_range(-1, 1) * 0.01;
+	}
+}
 
+/* TODO: add texture argument */
+void draw(float x, float y, float w, float h, float r,
+		float tx, float ty, float sx, float sy,
+		float u0, float v0, float u1, float v1) {
 
-    offset = count * VERTEX_SIZE;
+	float x0 = x;
+	float y0 = y;
+	float x1 = x + w;
+	float y1 = y;
+	float x2 = x;
+	float y2 = y + h;
+	float x3 = x;
+    float y3 = y + h;
+	float x4 = x + w;
+	float y4 = y;
+	float x5 = x + w;
+	float y5 = y + h;
 
-    // rotation | translation | scale | position | uv | color
-    // Vertex 1
-    vPositionData[offset++] = r;
-    vPositionData[offset++] = tx;
-    vPositionData[offset++] = ty;
-    vPositionData[offset++] = sx;
-    vPositionData[offset++] = sy;
-    vPositionData[offset++] = x0;
-    vPositionData[offset++] = y0;
-    vPositionData[offset++] = u0;
-    vPositionData[offset++] = v0;
+    unsigned int offset = count * VERTEX_SIZE * VERTICES_PER_QUAD;
 
-    // Vertex 2
-    vPositionData[offset++] = r;
-    vPositionData[offset++] = tx;
-    vPositionData[offset++] = ty;
-    vPositionData[offset++] = sx;
-    vPositionData[offset++] = sy;
-    vPositionData[offset++] = x1;
-    vPositionData[offset++] = y1;
-    vPositionData[offset++] = u1;
-    vPositionData[offset++] = v1;
+    /* Rotation | Translation | Scale | Position | UV | Color */
+	/* Vertex 1 */
+	pdata[offset++] = r;
+	pdata[offset++] = tx;
+	pdata[offset++] = ty;
+	pdata[offset++] = sx;
+	pdata[offset++] = sy;
+	pdata[offset++] = x0;
+	pdata[offset++] = y0;
+	pdata[offset++] = u0;
+	pdata[offset++] = v1;
+	/* cdata[offset++] = argb; */
 
-    // Vertex 3
-    vPositionData[offset++] = r;
-    vPositionData[offset++] = tx;
-    vPositionData[offset++] = ty;
-    vPositionData[offset++] = sx;
-    vPositionData[offset++] = sy;
-    vPositionData[offset++] = x2;
-    vPositionData[offset++] = y2;
-    vPositionData[offset++] = u0;
-    vPositionData[offset++] = v1;
+	/* Vertex 2 */
+	pdata[offset++] = r;
+	pdata[offset++] = tx;
+	pdata[offset++] = ty;
+	pdata[offset++] = sx;
+	pdata[offset++] = sy;
+	pdata[offset++] = x1;
+	pdata[offset++] = y1;
+	pdata[offset++] = u1;
+	pdata[offset++] = v1;
+	/* cdata[offset++] = argb; */
 
-    // Vertex 4
-    vPositionData[offset++] = r;
-    vPositionData[offset++] = tx;
-    vPositionData[offset++] = ty;
-    vPositionData[offset++] = sx;
-    vPositionData[offset++] = sy;
-    vPositionData[offset++] = x3;
-    vPositionData[offset++] = y3;
-    vPositionData[offset++] = u1;
-    vPositionData[offset++] = v0;
+	/* Vertex 3 */
+	pdata[offset++] = r;
+	pdata[offset++] = tx;
+	pdata[offset++] = ty;
+	pdata[offset++] = sx;
+	pdata[offset++] = sy;
+	pdata[offset++] = x2;
+	pdata[offset++] = y2;
+	pdata[offset++] = u0;
+	pdata[offset++] = v0;
+	/* cdata[offset++] = argb; */
+
+	/* Vertex 4 */
+	pdata[offset++] = r;
+	pdata[offset++] = tx;
+	pdata[offset++] = ty;
+	pdata[offset++] = sx;
+	pdata[offset++] = sy;
+	pdata[offset++] = x3;
+	pdata[offset++] = y3;
+	pdata[offset++] = u0;
+	pdata[offset++] = v0;
+	/* cdata[offset++] = argb; */
+
+	/* Vertex 5 */
+	pdata[offset++] = r;
+	pdata[offset++] = tx;
+	pdata[offset++] = ty;
+	pdata[offset++] = sx;
+	pdata[offset++] = sy;
+	pdata[offset++] = x4;
+	pdata[offset++] = y4;
+	pdata[offset++] = u1;
+	pdata[offset++] = v1;
+	/* cdata[offset++] = argb; */
+
+	/* Vertex 6 */
+	pdata[offset++] = r;
+	pdata[offset++] = tx;
+	pdata[offset++] = ty;
+	pdata[offset++] = sx;
+	pdata[offset++] = sy;
+	pdata[offset++] = x5;
+	pdata[offset++] = y5;
+	pdata[offset++] = u1;
+	pdata[offset++] = v0;
+	/* cdata[offset++] = argb; */
 
     if (++count >= MAX_BATCH) {
         printf("match batch reached\n");
@@ -92,6 +177,50 @@ void draw_img(float x, float y, float w, float h, float r,
     }
 }
 
+void flush() {
+	if (0 == count) return;
+	/* TODO: optimize this (glBufferSubData);    */
+	/* TODO: use index buffer and glDrawElements */
+	glBufferData(GL_ARRAY_BUFFER,
+			VERTEX_DATA_SIZE,
+			pdata,
+			GL_DYNAMIC_DRAW);
+	glDrawArrays(GL_TRIANGLES, 0, count * VERTICES_PER_QUAD);
+	count = 0;
+}
+
+void init_buffers() {
+    /* Rotation | Translation | Scale | Position | UV | Color */
+    int fsize = sizeof(GLfloat);
+    int stride = fsize * 9;
+
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    /* Rotation */
+    glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, stride, NULL);
+    glEnableVertexAttribArray(0);
+    /* Translation */
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*) 4);
+    glEnableVertexAttribArray(1);
+    /* Scale */
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*) 12);
+    glEnableVertexAttribArray(2);
+    /* Position */
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, stride, (void*) 20);
+    glEnableVertexAttribArray(3);
+    /* UV */
+    glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, stride, (void*) 28);
+    glEnableVertexAttribArray(4);
+    /* Color */
+    /* glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, stride, (void*) 36); */
+    /* glEnableVertexAttribArray(5); */
+}
 
 int main() {
     srand(time(NULL));
@@ -121,67 +250,51 @@ int main() {
     GLuint sp = create_program("vert.glsl", "frag.glsl");
     glUseProgram(sp);
 
-    // TODO: use indices + GL_ARRAY_ELEMENT_BUFFER
+	init_buffers();
 
-
-    // Buffers
-    // rotation|translation|scale|position|uv|color
-    int fsize = sizeof(GLfloat);
-    int stride = fsize * 5;
-
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    GLuint r_vbo, t_vbo, s_vbo, p_vbo, uv_vbo, c_vbo;
-    glGenBuffers(1, &r_vbo);
-    glGenBuffers(1, &t_vbo);
-    glGenBuffers(1, &s_vbo);
-    glGenBuffers(1, &p_vbo);
-    glGenBuffers(1, &uv_vbo);
-    glGenBuffers(1, &c_vbo);
-
-    // rotation
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, stride, NULL);
-    // translation
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride * 2, (void*) 2);
-    // scale
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride * 4, (void*) 6);
-    // position
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, stride * 6, (void*) 10);
-    // uv
-    glEnableVertexAttribArray(4);
-    glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, stride * 8, (void*) 14);
-    // color
-    glEnableVertexAttribArray(5);
-    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, stride * 10, (void*) 18);
-
-    // Rendering settings
-    glEnable(GL_PROGRAM_POINT_SIZE);
+    /* Rendering settings */
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     GLint u_matrix = glGetUniformLocation(sp, "u_matrix");
     glUniformMatrix4fv(u_matrix, 1, GL_FALSE, view_matrix);
 
-    // GLint u_image = glGetUniformLocation(sp, "u_image");
-    // GLuint tex;
-    // load_texture("dude.png", &tex, 0);
-    // glUniform1i(u_image, 0);
-    // dont forget to set glActiveTexture
+    GLint u_image = glGetUniformLocation(sp, "u_image");
+    GLuint tex;
+    load_texture("heart.png", &tex, 0);
+    glUniform1i(u_image, 0);
+
+	init_sprites();
 
     glClearColor(0.0, 0.0, 0.0, 1.0);
-    draw_img(10, 10, 500, 500, 0, 0, 0, 1, 1, 0, 0, 10, 10);
 
     while (!glfwWindowShouldClose(window)) {
-        // static double previous_seconds = glfwGetTime();
-        // double current_seconds = glfwGetTime();
-        // double elapsed_seconds = current_seconds - previous_seconds;
-        // previous_seconds = current_seconds;
+		static double previous_seconds = glfwGetTime();
+		double current_seconds = glfwGetTime();
+		double elapsed_seconds = current_seconds - previous_seconds;
+		previous_seconds = current_seconds;
+
+		int newsprites = (int) (elapsed_seconds * 10000.0);
+		if (newsprites >= 3)
+			newsprites = 3;
+
+
+		for (int i = 0; i < newsprites; i++) {
+
+			float x = (g_viewport_width * 0.5) + rand_range(-10, 10);
+			float y = (g_viewport_height * 0.5) + rand_range(-10, 10);
+
+			float size = SPRITE_SIZE + rand_range(1, SPRITE_SIZE);
+			float rotation = 0.0; /* rand_range(-9, 9) * 0.01; */
+
+			int idx = get_free_sprite();
+			sprites[idx].x = x;
+			sprites[idx].y = y;
+			sprites[idx].rotation = rotation;
+			sprites[idx].rotation_speed = rand_range(-1, 1) * 0.01;
+			sprites[idx].size = size;
+			sprites[idx].life = 100;
+		}
 
         int w, h;
         glfwGetFramebufferSize(window, &w, &h);
@@ -189,12 +302,37 @@ int main() {
 
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // printf("count: %d\n", count);
+		for (size_t i = 0; i < MAX_SPRITES; i++) {
+			if (sprites[i].life > 0) {
+				sprites[i].ay += grav;
 
-        glBindVertexArray(vao);
-        glBufferData(GL_ARRAY_BUFFER, count * VERTEX_SIZE * sizeof(GLfloat),
-                     vPositionData, GL_DYNAMIC_DRAW);
-        glDrawArrays(GL_TRIANGLES, 0, 1 * VERTICES_PER_QUAD);
+				sprites[i].ax *= delta;
+				sprites[i].ay *= delta;
+
+				sprites[i].vx += sprites[i].ax;
+				sprites[i].vy += sprites[i].ay;
+
+				sprites[i].x += sprites[i].vx;
+				sprites[i].y += sprites[i].vy;
+				sprites[i].ax = 0;
+				sprites[i].ay = 0;
+
+				sprites[i].rotation += sprites[i].rotation_speed;
+
+				sprites[i].life--;
+
+				draw(sprites[i].x, sprites[i].y,
+					sprites[i].size, sprites[i].size,
+					sprites[i].rotation,
+					0, 0,
+					1, 1,
+					0, 0, 1, 1);
+			} else {
+				sprites[i].life = -1.0f;
+			}
+		}
+
+		flush();
 
         glfwPollEvents();
         if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE)) {
