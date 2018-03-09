@@ -18,7 +18,8 @@ GLfloat view_matrix[16] = {
     0.0f, 0.0f, 1.0f, 1.0f,
    -1.0f, 1.0f, 0.0f, 0.0f
 };
-
+float mousex = (float)(g_viewport_width * 0.5);
+float mousey = (float)(g_viewport_height * 0.5);
 struct sprite {
 	float ax;
 	float ay;
@@ -59,10 +60,8 @@ int get_free_sprite() {
 void init_sprites() {
 	for (size_t i = 0; i < MAX_SPRITES; i++) {
 		sprite *s = &(sprites[i]);
-		float w = (float) (g_viewport_width * 0.5);
-		float h = (float) (g_viewport_height * 0.5);
-		float x = w + rand_range(-10, 10);
-		float y = h + rand_range(-10, 10);
+		float x = mousex + rand_range(-10, 10);
+		float y = mousey + rand_range(-10, 10);
 		s->ax = 0;
 		s->ay = 0;
 		s->life = -1.0;
@@ -211,6 +210,11 @@ void init_buffers() {
     glEnableVertexAttribArray(4);
 }
 
+static void cursor_pos_callback(GLFWwindow *window, double xpos, double ypos) {
+	mousex = xpos;
+	mousey = ypos;
+}
+
 int main() {
     srand(time(NULL));
 
@@ -232,6 +236,8 @@ int main() {
 
     glfwSetWindowPos(window, wx, wy);
     glfwMakeContextCurrent(window);
+
+	glfwSetCursorPosCallback(window, cursor_pos_callback);
 
     glewExperimental = GL_TRUE;
     glewInit();
@@ -264,14 +270,12 @@ int main() {
 		previous_seconds = current_seconds;
 
 		int newsprites = (int) (elapsed_seconds * 10000.0);
-		if (newsprites >= 3)
-			newsprites = 3;
-
+		if (newsprites >= 5)
+			newsprites = 5;
 
 		for (int i = 0; i < newsprites; i++) {
-
-			float x = (g_viewport_width * 0.5) + rand_range(-10, 10);
-			float y = (g_viewport_height * 0.5) + rand_range(-10, 10);
+			float x = mousex + rand_range(-10, 10);
+			float y = mousey + rand_range(-10, 10);
 
 			float size = SPRITE_SIZE + rand_range(1, SPRITE_SIZE);
 			float rotation = 0.0; /* rand_range(-9, 9) * 0.01; */
