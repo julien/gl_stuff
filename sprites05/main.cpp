@@ -10,10 +10,10 @@ int g_viewport_width = 1024;
 int g_viewport_height = 768;
 
 GLfloat view_matrix[16] = {
-    2.0f / (float) g_viewport_width, 0.0f, 0.0f, 0.0f,
-    0.0f, -2.0f / (float) g_viewport_height, 0.0f, 0.0f,
-    0.0f, 0.0f, 1.0f, 1.0f,
-   -1.0f, 1.0f, 0.0f, 0.0f
+	2.0f / (float) g_viewport_width, 0.0f, 0.0f, 0.0f,
+	0.0f, -2.0f / (float) g_viewport_height, 0.0f, 0.0f,
+	0.0f, 0.0f, 1.0f, 1.0f,
+	-1.0f, 1.0f, 0.0f, 0.0f
 };
 
 static const size_t vertcount = 6;
@@ -24,11 +24,15 @@ static float *vposdata = nullptr;
 static float *vposcurr = nullptr;
 static float *vcoldata = nullptr;
 static float *vcolcurr = nullptr;
+static float *vuvdata = nullptr;
+static float *vuvcurr = nullptr;
 static GLuint vao;
 static GLuint posvbo;
 static GLuint colvbo;
+static GLuint uvvbo;
 static size_t vpossize;
 static size_t vcolsize;
+static size_t vuvsize;
 static float gravity = 1.5f;
 
 void setcol(float r, float g, float b, float a = 1.0f) {
@@ -39,14 +43,14 @@ void setcol(float r, float g, float b, float a = 1.0f) {
 }
 
 void draw(float x, float y, float w, float h) {
-	// 1st triangle
+	/* 1st triangle */
 	vposcurr[0] = x;
 	vposcurr[1] = y;
 	vposcurr[2] = x + w;
 	vposcurr[3] = y + h;
 	vposcurr[4] = x;
 	vposcurr[5] = y + h;
-	// 2nd triangle
+	/* 2nd triangle */
 	vposcurr[6] = x;
 	vposcurr[7] = y;
 	vposcurr[8] = x + w;
@@ -54,7 +58,7 @@ void draw(float x, float y, float w, float h) {
 	vposcurr[10] = x + w;
 	vposcurr[11] = y + h;
 
-	// 1st triangle
+	/* 1st triangle */
 	vcolcurr[0] = rgba[0];
 	vcolcurr[1] = rgba[1];
 	vcolcurr[2] = rgba[2];
@@ -67,8 +71,7 @@ void draw(float x, float y, float w, float h) {
 	vcolcurr[9] = rgba[1];
 	vcolcurr[10] = rgba[2];
 	vcolcurr[11] = rgba[3];
-
-	// 2nd triangle
+	/* 2nd triangle */
 	vcolcurr[12] = rgba[0];
 	vcolcurr[13] = rgba[1];
 	vcolcurr[14] = rgba[2];
@@ -82,8 +85,24 @@ void draw(float x, float y, float w, float h) {
 	vcolcurr[22] = rgba[2];
 	vcolcurr[23] = rgba[3];
 
+	/* 1st triangle */
+	vuvcurr[0] = 0;
+	vuvcurr[1] = 1;
+	vuvcurr[2] = 1;
+	vuvcurr[3] = 0;
+	vuvcurr[4] = 0;
+	vuvcurr[5] = 0;
+	/* 2nd triangle */
+	vuvcurr[6] = 0;
+	vuvcurr[7] = 1;
+	vuvcurr[8] = 1;
+	vuvcurr[9] = 1;
+	vuvcurr[10] = 1;
+	vuvcurr[11] = 0;
+
 	vposcurr = (float*)((char*) vposcurr + (sizeof(float) * 12));
 	vcolcurr = (float*)((char*) vcolcurr + (sizeof(float) * 24));
+	vuvcurr = (float*)((char*) vuvcurr + (sizeof(float) * 12));
 
 	++buffidx;
 }
@@ -98,10 +117,16 @@ void flush() {
 	glBufferSubData(GL_ARRAY_BUFFER, 0,
 		sizeof(float) * buffidx * vertcount * 4, vcoldata);
 
+	glBindBuffer(GL_ARRAY_BUFFER, uvvbo);
+	glBufferSubData(GL_ARRAY_BUFFER, 0,
+		sizeof(float) * buffidx * vertcount * 2, vuvdata);
+
 	glDrawArrays(GL_TRIANGLES, 0, (GLsizei)(buffidx * vertcount));
+
 	buffidx = 0;
 	vposcurr = vposdata;
 	vcolcurr = vcoldata;
+	vuvcurr = vuvdata;
 }
 
 /* sprites */
@@ -126,7 +151,7 @@ void init_sprites(sprites *s) {
 		s->cr[i] = rand_range(1, 10) * 0.1f;
 		s->cg[i] = rand_range(1, 10) * 0.1f;
 		s->cb[i] = rand_range(1, 10) * 0.1f;
-		s->sx[i] = 2 + (int)rand_range(0, 4);
+		s->sx[i] = 16 + (int)rand_range(0, 32);
 	}
 	s->count = 1;
 }
@@ -151,7 +176,6 @@ void update_sprites(sprites *s) {
 			s->px[i] = 0;
 			s->vx[i] *= -0.9f;
 		}
-
 		s->vy[i]--;
 	}
 }
@@ -166,6 +190,7 @@ void render_sprites(sprites *s) {
 void init_buffers() {
 	vpossize = SPRITE_COUNT * (sizeof(float) * 12);
 	vcolsize = SPRITE_COUNT * (sizeof(float) * 24);
+	vuvsize = SPRITE_COUNT * (sizeof(float) * 12);
 
 	vposdata = (float*) malloc(vpossize);
 	vposcurr = vposdata;
@@ -173,97 +198,111 @@ void init_buffers() {
 	vcoldata = (float*) malloc(vcolsize);
 	vcolcurr = vcoldata;
 
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+	vuvdata = (float*) malloc(vuvsize);
+	vuvcurr = vuvdata;
+
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 
 	glGenBuffers(1, &posvbo);
 	glBindBuffer(GL_ARRAY_BUFFER, posvbo);
 	glBufferData(GL_ARRAY_BUFFER, vpossize, nullptr, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(0);
-   	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
 	glGenBuffers(1, &colvbo);
 	glBindBuffer(GL_ARRAY_BUFFER, colvbo);
 	glBufferData(GL_ARRAY_BUFFER, vcolsize, nullptr, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(1);
-   	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+	glGenBuffers(1, &uvvbo);
+	glBindBuffer(GL_ARRAY_BUFFER, uvvbo);
+	glBufferData(GL_ARRAY_BUFFER, vuvsize, nullptr, GL_DYNAMIC_DRAW);
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 }
 
 
 int main() {
-    srand(time(NULL));
+	srand(time(NULL));
 
-    glfwInit();
+	glfwInit();
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow *window = glfwCreateWindow(
-                             g_viewport_width, g_viewport_height, "  ", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(
+							 g_viewport_width, g_viewport_height, "  ", NULL, NULL);
 
-    GLFWmonitor *mon = glfwGetPrimaryMonitor();
-    const GLFWvidmode *mode = glfwGetVideoMode(mon);
+	GLFWmonitor *mon = glfwGetPrimaryMonitor();
+	const GLFWvidmode *mode = glfwGetVideoMode(mon);
 
-    int wx = (int)((mode->width - g_viewport_width) * 0.5);
-    int wy = (int)((mode->height - g_viewport_height) * 0.5);
+	int wx = (int)((mode->width - g_viewport_width) * 0.5);
+	int wy = (int)((mode->height - g_viewport_height) * 0.5);
 
-    glfwSetWindowPos(window, wx, wy);
-    glfwMakeContextCurrent(window);
+	glfwSetWindowPos(window, wx, wy);
+	glfwMakeContextCurrent(window);
 
-    glewExperimental = GL_TRUE;
-    glewInit();
+	glewExperimental = GL_TRUE;
+	glewInit();
 
 	sprites *s = (sprites*) malloc(sizeof(sprites));
 	if (NULL == s) {
 		fprintf(stderr, "Couldn't allocate memory for sprites\n");
 		return 1;
 	}
+
 	init_sprites(s);
 
-    GLuint sp = create_program("vert.glsl", "frag.glsl");
-    glUseProgram(sp);
+	GLuint sp = create_program("vert.glsl", "frag.glsl");
+	glUseProgram(sp);
 
 	init_buffers();
 
-    GLint u_matrix = glGetUniformLocation(sp, "u_matrix");
-    glUniformMatrix4fv(u_matrix, 1, GL_FALSE, view_matrix);
+	GLint u_matrix = glGetUniformLocation(sp, "u_matrix");
+	glUniformMatrix4fv(u_matrix, 1, GL_FALSE, view_matrix);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	GLint u_image = glGetUniformLocation(sp, "u_image");
+	GLuint tex;
+	load_texture("cat.png", &tex, 0);
+	glUniform1i(u_image, 0);
 
-    glClearColor(0.0, 0.0, 0.0, 1.0);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    while (!glfwWindowShouldClose(window)) {
-        int w, h;
-        glfwGetFramebufferSize(window, &w, &h);
-        glViewport(0, 0, w, h);
+	glClearColor(0.0, 0.0, 0.0, 1.0);
 
-        glClear(GL_COLOR_BUFFER_BIT);
+	while (!glfwWindowShouldClose(window)) {
+		int w, h;
+		glfwGetFramebufferSize(window, &w, &h);
+		glViewport(0, 0, w, h);
+
+		glClear(GL_COLOR_BUFFER_BIT);
 
 		update_sprites(s);
 		render_sprites(s);
 		flush();
 
-        glfwPollEvents();
+		glfwPollEvents();
 
 		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_UP)) {
-			if (s->count < SPRITE_COUNT) {
+			if (s->count + 100 < SPRITE_COUNT) {
 				s->count += 100;
 			}
 		}
 
-        if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE)) {
-            glfwSetWindowShouldClose(window, 1);
-        }
-        glfwSwapBuffers(window);
-    }
+		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE)) {
+			glfwSetWindowShouldClose(window, 1);
+		}
+		glfwSwapBuffers(window);
+	}
 
 	if (NULL != s)
 		free(s);
 
-    glfwTerminate();
-    return 0;
+	glfwTerminate();
+	return 0;
 }
