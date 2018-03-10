@@ -4,7 +4,7 @@
 #include <time.h>
 #include "utils.h"
 
-#define SPRITE_COUNT 100000
+#define SPRITE_COUNT 1000000
 
 int g_viewport_width = 1024;
 int g_viewport_height = 768;
