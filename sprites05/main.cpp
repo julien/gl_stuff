@@ -128,7 +128,7 @@ void init_sprites(sprites *s) {
 		s->cb[i] = rand_range(1, 10) * 0.1f;
 		s->sx[i] = 2 + (int)rand_range(0, 4);
 	}
-	s->count = 0;
+	s->count = 1;
 }
 
 void update_sprites(sprites *s) {
@@ -139,20 +139,16 @@ void update_sprites(sprites *s) {
 
 		if (s->py[i] > g_viewport_height) {
 			s->py[i] = g_viewport_height;
-			// s->vy[i] *= -1.0f;
 			s->vy[i] *= -0.9f;
 		} else if (s->py[i] < 0) {
 			s->py[i] = 0;
-			// s->vy[i] *= -1.0f;
-			s->vy[i] *= -0.8f;
+			s->vy[i] *= -0.9f;
 		}
 		if (s->px[i] > g_viewport_width) {
 			s->px[i] = g_viewport_width;
-			// s->vx[i] *= -1.0f;
 			s->vx[i] *= -0.9f;
 		} else if (s->px[i] < 0) {
 			s->px[i] = 0;
-			// s->vx[i] *= -1.0f;
 			s->vx[i] *= -0.9f;
 		}
 
@@ -258,7 +254,6 @@ int main() {
 				s->count += 100;
 			}
 		}
-
 
         if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE)) {
             glfwSetWindowShouldClose(window, 1);
