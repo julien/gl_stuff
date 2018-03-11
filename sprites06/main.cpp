@@ -4,7 +4,7 @@
 #include <time.h>
 #include "utils.h"
 
-#define SPRITE_COUNT 100000
+#define SPRITE_COUNT 1000000
 
 int g_viewport_width = 1024;
 int g_viewport_height = 768;
@@ -155,9 +155,9 @@ void init_sprites(sprites *s) {
 		s->cg[i] = rand_range(1, 10) * 0.1f;
 		s->cb[i] = rand_range(1, 10) * 0.1f;
 
-		s->size[i] = 4 + (int)rand_range(0, 12);
+		s->size[i] = 2 + (int)rand_range(0, 2);
 	}
-	s->count = 1000;
+	s->count = 10000;
 }
 
 void update_sprites(sprites *s) {
