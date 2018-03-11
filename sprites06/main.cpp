@@ -155,7 +155,7 @@ void init_sprites(sprites *s) {
 		s->cg[i] = rand_range(1, 10) * 0.1f;
 		s->cb[i] = rand_range(1, 10) * 0.1f;
 
-		s->size[i] = 2 + (int)rand_range(0, 2);
+		s->size[i] = 2 + (int) rand_range(0, 2);
 	}
 	s->count = 10000;
 }
@@ -181,6 +181,7 @@ void update_sprites(sprites *s) {
 
 		s->vx[i] *= 0.96;
 		s->vy[i] *= 0.96;
+
 
 		if (s->px[i] > g_viewport_width) {
 			s->px[i] = 0;
