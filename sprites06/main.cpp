@@ -17,15 +17,15 @@ GLfloat view_matrix[16] = {
 };
 
 static const size_t vertcount = 6;
-static const size_t max_vertices = SPRITE_COUNT * vertcount;
+// static const size_t max_vertices = SPRITE_COUNT * vertcount;
 static float rgba[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 static size_t buffidx = 0;
-static float *vposdata = nullptr;
-static float *vposcurr = nullptr;
-static float *vcoldata = nullptr;
-static float *vcolcurr = nullptr;
-static float *vuvdata = nullptr;
-static float *vuvcurr = nullptr;
+static float *vposdata = NULL;
+static float *vposcurr = NULL;
+static float *vcoldata = NULL;
+static float *vcolcurr = NULL;
+static float *vuvdata = NULL;
+static float *vuvcurr = NULL;
 static GLuint vao;
 static GLuint posvbo;
 static GLuint colvbo;
@@ -224,21 +224,21 @@ void init_buffers() {
 
 	glGenBuffers(1, &posvbo);
 	glBindBuffer(GL_ARRAY_BUFFER, posvbo);
-	glBufferData(GL_ARRAY_BUFFER, vpossize, nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vpossize, NULL, GL_DYNAMIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
 	glGenBuffers(1, &colvbo);
 	glBindBuffer(GL_ARRAY_BUFFER, colvbo);
-	glBufferData(GL_ARRAY_BUFFER, vcolsize, nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vcolsize, NULL, GL_DYNAMIC_DRAW);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
 	glGenBuffers(1, &uvvbo);
 	glBindBuffer(GL_ARRAY_BUFFER, uvvbo);
-	glBufferData(GL_ARRAY_BUFFER, vuvsize, nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vuvsize, NULL, GL_DYNAMIC_DRAW);
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 }
 
 static void cursor_pos_callback(GLFWwindow *window, double xpos, double ypos) {
