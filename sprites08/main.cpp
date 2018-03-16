@@ -5,9 +5,10 @@
 #include "utils.h"
 
 #define SPRITE_COUNT 1000000
-#define SPRITE_MAX_FORCE 10
-#define SPRITE_MAX_SPEED 8
-#define PI 3.14159;
+#define SPRITE_MAX_FORCE 20
+#define SPRITE_MAX_SPEED 10
+#define MIN_FLEE_DISTANCE 20
+#define MAX_FLEE_DISTANCE 400
 
 int g_viewport_width = 1024;
 int g_viewport_height = 768;
@@ -72,6 +73,7 @@ void vec2_limit(vec2 *v, float max) {
 }
 
 vec2 mouse;
+float flee_distance = MIN_FLEE_DISTANCE;
 
 void setcol(float r, float g, float b, float a = 1.0f) {
 	rgba[0] = r;
@@ -205,10 +207,10 @@ void init_sprites(sprites *s) {
 		s->cg[i] = rand_range(1, 10) * 0.1f;
 		s->cb[i] = rand_range(1, 10) * 0.1f;
 
-		float size = 3 + rand_range(0, 18);
+		float size = 3 + rand_range(0, 12);
 		s->sx[i] = s->sy[i] = size;
 	}
-	s->count = 5000;
+	s->count = 3000;
 }
 
 void apply_sprite_force(sprites *s, size_t i, vec2 f) {
@@ -228,7 +230,7 @@ vec2 sprite_flee(sprites *s, size_t i, vec2 t) {
 		};
 
 		float d = vec2_mag(desired);
-		if (d < 50) {
+		if (d < flee_distance) {
 			vec2_setmag(&desired, SPRITE_MAX_SPEED);
 			desired.x *= -1;
 			desired.y *= -1;
@@ -270,15 +272,14 @@ vec2 sprite_arrive(sprites *s, size_t i, vec2 t) {
 
 void apply_behaviors(sprites *s) {
 	for (size_t i = 0; i < s->count; i++) {
-
 		vec2 arrive = sprite_arrive(s, i, s->target[i]);
-		arrive.x *= 0.1;
-		arrive.y *= 0.1;
+		arrive.x *= 0.2;
+		arrive.y *= 0.2;
 
 
 		vec2 flee = sprite_flee(s, i, mouse);
-		flee.x *= 0.4;
-		flee.y *= 0.3;
+		flee.x *= 0.2;
+		flee.y *= 0.2;
 
 		apply_sprite_force(s, i, arrive);
 		apply_sprite_force(s, i, flee);
@@ -420,6 +421,24 @@ int main() {
 		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_UP)) {
 			if (s->count + 100 < SPRITE_COUNT) {
 				s->count += 100;
+			}
+		}
+
+		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_DOWN)) {
+			if (s->count - 100 > 1) {
+				s->count -= 100;
+			}
+		}
+
+		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_RIGHT)) {
+			if (flee_distance < MAX_FLEE_DISTANCE) {
+				flee_distance++;
+			}
+		}
+
+		if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_LEFT)) {
+			if (flee_distance > MIN_FLEE_DISTANCE) {
+				flee_distance--;
 			}
 		}
 
