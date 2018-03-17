@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include <time.h>
 #include "utils.h"
+#include "vec2.h"
 
 #define SPRITE_COUNT 1000000
-#define PI 3.151416
 
 int g_viewport_width = 1024;
 int g_viewport_height = 768;
@@ -35,21 +35,6 @@ static size_t vcolsize;
 static size_t vuvsize;
 float mousex = g_viewport_width * 0.5;
 float mousey = g_viewport_height * 0.5;
-
-struct vec2 {
-	float x;
-	float y;
-};
-
-vec2 rotate2D(vec2 *point, float theta) {
-	float tmpx = point->x;
-
-	point->x = point->x * cos(theta) - point->y * sin(theta);
-	point->y = tmpx * sin(theta) + point->y * cos(theta);
-
-	return *point;
-}
-
 
 void setcol(float r, float g, float b, float a = 1.0f) {
 	rgba[0] = r;
@@ -183,7 +168,7 @@ void init_sprites(sprites *s) {
 	s->count = 10000;
 }
 
-void reset_particle(sprites *s, size_t i) {
+void reset_sprite(sprites *s, size_t i) {
 	if (i < SPRITE_COUNT) {
 		s->px[i] = (g_viewport_width * 0.5) + rand_range(-10, 10);
 		s->py[i] = (g_viewport_height * 0.5) + rand_range(-10, 10);
@@ -220,14 +205,14 @@ void update_sprites(sprites *s) {
 		s->py[i] += s->vy[i];
 
 		vec2 vxy = {s->vx[i], s->vy[i]};
-		vec2 tmp = rotate2D(&vxy, rand_range(-(PI * 0.5), PI * 0.25));
+		vec2_rotate(&vxy, rand_range(-(M_PI * 0.5), M_PI * 0.25));
 
-		s->vx[i] = tmp.x;
-		s->vy[i] = tmp.y;
+		s->vx[i] = vxy.x;
+		s->vy[i] = vxy.y;
 
 
 		if (s->life[i] >= 100)  {
-			reset_particle(s, i);
+			reset_sprite(s, i);
 		}
 	}
 }
