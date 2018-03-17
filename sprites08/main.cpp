@@ -3,15 +3,16 @@
 #include <stdio.h>
 #include <time.h>
 #include "utils.h"
+#include "vec2.h"
 
 #define SPRITE_COUNT 1000000
 #define SPRITE_MAX_FORCE 20
 #define SPRITE_MAX_SPEED 10
-#define MIN_FLEE_DISTANCE 20
+#define MIN_FLEE_DISTANCE 60
 #define MAX_FLEE_DISTANCE 400
 
-int g_viewport_width = 1024;
-int g_viewport_height = 768;
+int g_viewport_width = 800;
+int g_viewport_height = 800;
 
 GLfloat view_matrix[16] = {
 	2.0f / (float) g_viewport_width, 0.0f, 0.0f, 0.0f,
@@ -36,41 +37,6 @@ static GLuint uvvbo;
 static size_t vpossize;
 static size_t vcolsize;
 static size_t vuvsize;
-
-struct vec2 {
-	float x;
-	float y;
-};
-
-float vec2_mag(vec2 v) {
-	return (float) sqrt(v.x*v.x + v.y*v.y);
-}
-
-float vec2_magsq(vec2 v) {
-	return (v.x*v.x + v.y*v.y);
-}
-
-void vec2_normalize(vec2 *v) {
-	float m = vec2_mag(*v);
-	if (m != 0 && m != 1) {
-		v->x /= m;
-		v->y /= m;
-	}
-}
-
-void vec2_setmag(vec2 *v, float len) {
-	vec2_normalize(v);
-	v->x *= len;
-	v->y *= len;
-}
-
-void vec2_limit(vec2 *v, float max) {
-	if (vec2_magsq(*v) > max * max) {
-		vec2_normalize(v);
-		v->x *= max;
-		v->y *= max;
-	}
-}
 
 vec2 mouse;
 float flee_distance = MIN_FLEE_DISTANCE;
@@ -229,9 +195,9 @@ vec2 sprite_flee(sprites *s, size_t i, vec2 t) {
 			t.y - s->py[i]
 		};
 
-		float d = vec2_mag(desired);
+		float d = vec2_get_mag(desired);
 		if (d < flee_distance) {
-			vec2_setmag(&desired, SPRITE_MAX_SPEED);
+			vec2_set_mag(&desired, SPRITE_MAX_SPEED);
 			desired.x *= -1;
 			desired.y *= -1;
 
@@ -255,11 +221,11 @@ vec2 sprite_arrive(sprites *s, size_t i, vec2 t) {
 		};
 
 		float speed = SPRITE_MAX_SPEED;
-		float d = vec2_mag(desired);
+		float d = vec2_get_mag(desired);
 		if (d < 100) {
 			speed = map(d, 0, 100, 0, SPRITE_MAX_SPEED);
 		}
-		vec2_setmag(&desired, speed);
+		vec2_set_mag(&desired, speed);
 
 		f.x = desired.x - s->vx[i];
 		f.y = desired.y - s->vy[i];
@@ -381,8 +347,8 @@ int main() {
 		return 1;
 	}
 
-	mouse.x = 0;// (float) g_viewport_width * 0.5f;
-	mouse.y = 0;// (float) g_viewport_height * 0.5f;
+	mouse.x = 0;
+	mouse.y = 0;
 
 	init_sprites(s);
 
