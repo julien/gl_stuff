@@ -17,7 +17,6 @@ GLfloat view_matrix[16] = {
 };
 
 static const size_t vertcount = 6;
-// static const size_t max_vertices = SPRITE_COUNT * vertcount;
 static float rgba[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 static size_t buffidx = 0;
 static float *vposdata = NULL;
