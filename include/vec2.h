@@ -46,10 +46,12 @@ float vec2_dot(vec2 v1, vec2 v2) {
 }
 
 vec2 vec2_from_angle(float angle) {
-	return {
+	vec2 v = {
 		(float) cos(angle),
 		(float) sin(angle)
 	};
+
+	return v;
 }
 
 float vec2_get_mag(vec2 v) {

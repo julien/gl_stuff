@@ -167,7 +167,8 @@ void init_sprites(sprites *s) {
 		s->vx[i] = 0;
 		s->vx[i] = 0;
 
-		s->target[i] = vec2{s->px[i], s->py[i]};
+		s->target[i].x = s->px[i];
+		s->target[i].y = s->py[i];
 
 		/* colors */
 		s->cr[i] = rand_range(1, 10) * 0.1f;
