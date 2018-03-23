@@ -7,7 +7,7 @@ ifeq ($(UNAME), Darwin)
 endif
 
 bin?=app
-src?=$(shell find *.cpp -type f)
+src?=$(@shell find *.cpp -type f)
 
 $(bin): $(src)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(FLAGS)
@@ -17,5 +17,8 @@ debug: clean $(bin);
 
 clean:
 	@if [ -f $(bin) ];then rm $(bin);fi
+
+clean_all:
+	@find . -type f -name '$(bin)' -exec rm {} \+
 
 all: $(bin)
