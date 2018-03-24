@@ -7,7 +7,7 @@ ifeq ($(UNAME), Darwin)
 endif
 
 bin?=app
-src?=$(@shell find *.cpp -type f)
+src?=$(shell find *.cpp -type f)
 
 $(bin): $(src)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(FLAGS)
