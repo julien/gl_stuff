@@ -34,7 +34,7 @@ static size_t vpossize;
 static size_t vcolsize;
 static size_t vuvsize;
 
-void setcol(float r, float g, float b, float a = 1.0f) {
+void setcol(float r, float g, float b, float a = 0.3f) {
 	rgba[0] = r;
 	rgba[1] = g;
 	rgba[2] = b;
