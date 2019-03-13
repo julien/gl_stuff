@@ -45,8 +45,8 @@ void setup_sprites() {
 		s->ay = 0;
 		s->life = rand_range(100, 200);
 		s->size = SPRITE_SIZE + rand_range(2, SPRITE_SIZE);
-		s->vx = rand_range(-10, 10);
-		s->vy = rand_range(-10, 10);
+		s->vx = rand_range(-1, 1);
+		s->vy = rand_range(-1, 1);
 		s->x = x;
 		s->y = y;
 	}
@@ -177,8 +177,8 @@ int main() {
 			if (sprites[i].life > 0) {
 				sprites[i].ay += grav;
 
-				sprites[i].ax *= delta;
-				sprites[i].ay *= delta;
+				/* sprites[i].ax *= delta; */
+				/* sprites[i].ay *= delta; */
 
 				sprites[i].vx += sprites[i].ax;
 				sprites[i].vy += sprites[i].ay;
