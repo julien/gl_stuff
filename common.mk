@@ -1,5 +1,5 @@
 CXXFLAGS=-Wall -pedantic
-FLAGS:=$(shell pkg-config --libs --static glew glfw3)
+FLAGS:=$(shell pkg-config --libs --static --cflags-only-I glew glfw3)
 FLAGS+=-I../include
 UNAME=$(shell uname -s)
 ifeq ($(UNAME), Darwin)
